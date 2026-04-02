@@ -78,7 +78,7 @@ An iOS app for shared living — track expenses, coordinate chores, and communic
 
 /households/{householdId}/chores/{choreId}
   title, description, frequency, assignablePool[], approvals{},
-  status, nextDueDate, currentAssigneeId, lastAssignedTo,
+  status, nextDueDate, currentAssigneeId,
   completionCounts{}, createdBy, createdAt
 
 /households/{householdId}/chores/{choreId}/completions/{completionId}
@@ -143,7 +143,7 @@ service firebase.storage {
 
 ## Chore Assignment Algorithm
 
-Chores use fairness-weighted random selection. Each eligible member's weight is `1 / (completionCount + 1)`, so members who have completed the chore fewer times are proportionally more likely to be assigned next. The previous assignee is excluded from the next round to prevent consecutive assignments.
+Chores use fairness-weighted random selection. Each eligible member's weight is `1 / (completionCount + 1)`, so members who have completed the chore fewer times are proportionally more likely to be assigned next. There is no hard exclusion of the previous assignee — the weighting alone naturally discourages back-to-back assignments and works correctly for any pool size, including 2-person households where hard exclusion would reduce to deterministic alternation.
 
 ## V2 Roadmap
 

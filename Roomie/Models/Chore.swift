@@ -11,7 +11,6 @@ struct Chore: Codable, Identifiable {
     var status: ChoreStatus
     var nextDueDate: Date
     var currentAssigneeId: String?
-    var lastAssignedTo: String?
     /// Running tally of completions per user — used for fairness-weighted assignment
     var completionCounts: [String: Int]
     var createdBy: String
@@ -32,12 +31,14 @@ struct Chore: Codable, Identifiable {
     // MARK: - Probabilistic assignment
 
     /// Returns the next assignee using fairness-weighted random selection.
-    /// Members with fewer completions receive proportionally higher weight.
-    func selectNextAssignee(excluding excluded: String? = nil) -> String? {
-        let candidates = assignablePool.filter { $0 != excluded }
-        guard !candidates.isEmpty else { return assignablePool.first }
+    /// Weight = 1 / (completionCount + 1), so members who have done the chore
+    /// fewer times are proportionally more likely to be selected next.
+    /// No hard exclusion — the weighting naturally discourages consecutive
+    /// assignments and works correctly for any pool size including 2 people.
+    func selectNextAssignee() -> String? {
+        guard !assignablePool.isEmpty else { return nil }
 
-        let weights = candidates.map { userId in
+        let weights = assignablePool.map { userId in
             1.0 / Double((completionCounts[userId] ?? 0) + 1)
         }
         let total = weights.reduce(0, +)
@@ -45,9 +46,9 @@ struct Chore: Codable, Identifiable {
 
         for (index, weight) in weights.enumerated() {
             roll -= weight
-            if roll <= 0 { return candidates[index] }
+            if roll <= 0 { return assignablePool[index] }
         }
-        return candidates.last
+        return assignablePool.last
     }
 }
 

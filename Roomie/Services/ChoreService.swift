@@ -60,6 +60,7 @@ final class ChoreService: ChoreServiceProtocol {
             if chore.currentAssigneeId == nil {
                 chore.currentAssigneeId = chore.selectNextAssignee()
             }
+
         }
 
         try ref.setData(from: chore)
@@ -75,9 +76,8 @@ final class ChoreService: ChoreServiceProtocol {
         let snapshot = try await ref.getDocument()
         guard var chore = try? snapshot.data(as: Chore.self) else { return nil }
 
-        let assignee = chore.selectNextAssignee(excluding: chore.lastAssignedTo)
+        let assignee = chore.selectNextAssignee()
         chore.currentAssigneeId = assignee
-        chore.lastAssignedTo = assignee
         try ref.setData(from: chore)
         return assignee
     }
@@ -104,7 +104,6 @@ final class ChoreService: ChoreServiceProtocol {
 
         // Update completion counts and advance schedule
         chore.completionCounts[userId, default: 0] += 1
-        chore.lastAssignedTo = userId
 
         let (component, value) = chore.frequency.calendarAdvance
         chore.nextDueDate = Calendar.current.date(
@@ -112,7 +111,7 @@ final class ChoreService: ChoreServiceProtocol {
         ) ?? chore.nextDueDate
 
         // Assign next person
-        chore.currentAssigneeId = chore.selectNextAssignee(excluding: userId)
+        chore.currentAssigneeId = chore.selectNextAssignee()
 
         try ref.setData(from: chore)
     }

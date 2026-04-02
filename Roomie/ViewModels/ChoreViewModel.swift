@@ -55,7 +55,6 @@ final class ChoreViewModel: ObservableObject {
             status: .pending,
             nextDueDate: Date(),
             currentAssigneeId: nil,
-            lastAssignedTo: nil,
             completionCounts: [:],
             createdBy: currentUserId,
             createdAt: Date()
