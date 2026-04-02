@@ -104,6 +104,7 @@ final class ChoreService: ChoreServiceProtocol {
 
         // Update completion counts and advance schedule
         chore.completionCounts[userId, default: 0] += 1
+        if chore.excludeLastAssignee { chore.lastCompletedBy = userId }
 
         let (component, value) = chore.frequency.calendarAdvance
         chore.nextDueDate = Calendar.current.date(

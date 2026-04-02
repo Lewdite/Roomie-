@@ -10,6 +10,7 @@ struct AddChoreView: View {
     @State private var description = ""
     @State private var frequency: ChoreFrequency = .weekly
     @State private var selectedMemberIds: Set<String> = []
+    @State private var excludeLastAssignee = false
     @State private var isSubmitting = false
 
     var body: some View {
@@ -44,6 +45,17 @@ struct AddChoreView: View {
                     Text("All selected members must approve this chore before it becomes active.")
                         .font(.caption)
                 }
+
+                Section {
+                    Toggle(isOn: $excludeLastAssignee) {
+                        Label("Never assign twice in a row", systemImage: "arrow.2.squarepath")
+                    }
+                } footer: {
+                    Text(excludeLastAssignee
+                         ? "The previous person is always excluded from the next draw. Best for small households or chores that should strictly alternate."
+                         : "Assignment is purely probability-weighted by completion count. The same person could be picked consecutively, but less likely the more they've done it.")
+                        .font(.caption)
+                }
             }
             .navigationTitle("Propose Chore")
             .navigationBarTitleDisplayMode(.inline)
@@ -74,7 +86,8 @@ struct AddChoreView: View {
                 title: title.trimmingCharacters(in: .whitespaces),
                 description: description.trimmingCharacters(in: .whitespaces),
                 frequency: frequency,
-                assignablePool: Array(selectedMemberIds)
+                assignablePool: Array(selectedMemberIds),
+                excludeLastAssignee: excludeLastAssignee
             )
             isSubmitting = false
             dismiss()

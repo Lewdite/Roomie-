@@ -11,8 +11,13 @@ struct Chore: Codable, Identifiable {
     var status: ChoreStatus
     var nextDueDate: Date
     var currentAssigneeId: String?
+    /// When true, the person who most recently completed this chore is excluded
+    /// from the next assignment draw. Useful for guaranteed alternation in small
+    /// households. Toggled before ratification; defaults to false.
+    var excludeLastAssignee: Bool
     /// Running tally of completions per user — used for fairness-weighted assignment
     var completionCounts: [String: Int]
+    var lastCompletedBy: String?     // tracked only when excludeLastAssignee is true
     var createdBy: String
     var createdAt: Date
 
@@ -33,12 +38,22 @@ struct Chore: Codable, Identifiable {
     /// Returns the next assignee using fairness-weighted random selection.
     /// Weight = 1 / (completionCount + 1), so members who have done the chore
     /// fewer times are proportionally more likely to be selected next.
-    /// No hard exclusion — the weighting naturally discourages consecutive
-    /// assignments and works correctly for any pool size including 2 people.
+    ///
+    /// When `excludeLastAssignee` is true on the chore, the most recent completer
+    /// is removed from the candidate pool before the draw, guaranteeing they
+    /// won't be picked consecutively. Falls back to the full pool if excluding
+    /// would leave no candidates (e.g. a solo assignable pool).
     func selectNextAssignee() -> String? {
         guard !assignablePool.isEmpty else { return nil }
 
-        let weights = assignablePool.map { userId in
+        let candidates: [String]
+        if excludeLastAssignee, let last = lastCompletedBy, assignablePool.count > 1 {
+            candidates = assignablePool.filter { $0 != last }
+        } else {
+            candidates = assignablePool
+        }
+
+        let weights = candidates.map { userId in
             1.0 / Double((completionCounts[userId] ?? 0) + 1)
         }
         let total = weights.reduce(0, +)
@@ -46,9 +61,9 @@ struct Chore: Codable, Identifiable {
 
         for (index, weight) in weights.enumerated() {
             roll -= weight
-            if roll <= 0 { return assignablePool[index] }
+            if roll <= 0 { return candidates[index] }
         }
-        return assignablePool.last
+        return candidates.last
     }
 }
 

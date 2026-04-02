@@ -42,7 +42,8 @@ final class ChoreViewModel: ObservableObject {
         title: String,
         description: String,
         frequency: ChoreFrequency,
-        assignablePool: [String]
+        assignablePool: [String],
+        excludeLastAssignee: Bool
     ) async {
         let chore = Chore(
             id: UUID().uuidString,
@@ -55,7 +56,9 @@ final class ChoreViewModel: ObservableObject {
             status: .pending,
             nextDueDate: Date(),
             currentAssigneeId: nil,
+            excludeLastAssignee: excludeLastAssignee,
             completionCounts: [:],
+            lastCompletedBy: nil,
             createdBy: currentUserId,
             createdAt: Date()
         )
