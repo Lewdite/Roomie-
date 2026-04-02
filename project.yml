@@ -1,0 +1,54 @@
+name: Roomie
+options:
+  bundleIdPrefix: com.roomie
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "15"
+  createIntermediateGroups: true
+
+settings:
+  SWIFT_VERSION: "5.9"
+  ENABLE_PREVIEWS: YES
+
+targets:
+  Roomie:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Roomie
+    info:
+      path: Roomie/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Roomie
+        CFBundleIdentifier: com.roomie.app
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen:
+          UIColorName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSCameraUsageDescription: "Used to photograph receipts for expense tracking."
+        NSPhotoLibraryUsageDescription: "Used to attach receipt photos to expenses."
+        UIBackgroundModes:
+          - remote-notification
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.roomie.app
+      DEVELOPMENT_TEAM: ""        # Set your Apple Developer Team ID
+      CODE_SIGN_STYLE: Automatic
+    dependencies:
+      - package: FirebaseAuth
+      - package: FirebaseFirestore
+      - package: FirebaseFirestoreSwift
+      - package: FirebaseStorage
+      - package: FirebaseMessaging
+      - package: GoogleSignIn
+      - package: GoogleSignInSwift
+
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: "10.0.0"
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "7.0.0"
